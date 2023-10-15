@@ -35,7 +35,7 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto">
           <li class="nav-item">
-            <a class="nav-link" href="{% url "home" %}">Home</a>
+            <a class="nav-link" href="{% url 'home' %}">Home</a>
           </li>
 		  <li class="nav-item">
             <a class="nav-link" href=""></a>
@@ -43,22 +43,35 @@
         </ul>
         <ul class="navbar-nav d-flex flex-row">
           {% if user.is_authenticated %}
+		  <li class="nav-item">
+            <a class="nav-link" href="{% url 'items' %}">Items</a>
+          </li>
           <li class="nav-item me-3 me-lg-0">
               <a class="nav-link"><i class="fa fa-user"> Welcome, {{user.username}}!</a></i>
           </li>
+		  <li class="nav-item me-3 me-lg-0">
+            <a class="nav-link" class="btn btn-danger btn-rounded" href="{% url 'add_item' %}">
+            <button class="btn btn-outline-danger me-2" type="button">Add Item</button>
+            </a>
+          </li>
+		  <li class="nav-item me-3 me-lg-0">
+            <a class="nav-link" class="btn btn-danger btn-rounded" href="{% url 'tracker' %}">
+            <button class="btn btn-outline-danger me-2" type="button">Tracker</button>
+            </a>
+          </li>
           <li class="nav-item me-3 me-lg-0">
-            <a class="nav-link" class="btn btn-danger btn-rounded" href="{% url "logout" %}">
+            <a class="nav-link" class="btn btn-danger btn-rounded" href="{% url 'logout' %}">
             <button class="btn btn-outline-danger me-2" type="button">Logout</button>
             </a>
           </li>
           {% else %}
           <li class="nav-item me-3 me-lg-0">
-            <a class="nav-link" class="btn btn-success btn-rounded" href="{% url "register" %}">
+            <a class="nav-link" class="btn btn-success btn-rounded" href="{% url 'register' %}">
                 <button class="btn btn-outline-success me-2" type="button">Sign Up</button>
             </a>
           </li>
           <li class="nav-item me-3 me-lg-0">
-            <a class="nav-link" class="btn btn-primary btn-rounded" href="{% url "login" %}">
+            <a class="nav-link" class="btn btn-primary btn-rounded" href="{% url 'login' %}">
             <button class="btn btn-outline-primary me-2" type="button">Login</button>
             </a>
           </li>

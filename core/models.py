@@ -5,11 +5,11 @@ from django.contrib.auth.models import AbstractUser
 class User(AbstractUser):
 
     GENDER = (
-        ('Male', 'Male'),
-        ('Female', 'Female'),
+        ('M', 'Male'),
+        ('F', 'Female'),
     )
     
-    gender = models.CharField(max_length=30, blank=True, null=True, choices=GENDER)
+    gender = models.CharField(max_length=30, blank=True, null=True, default="F", choices=GENDER)
 
     def __str__(self):
-        return self.gender
+        return self.username

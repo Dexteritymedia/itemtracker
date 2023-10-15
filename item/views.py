@@ -12,7 +12,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.utils import timezone
 
-#from .models import 
+import pandas as pd
+
+from .models import Item, ItemTracker, ItemDay
 #from .utils import *
 from .forms import SignUpForm, ItemDayForm, ItemTrackerForm, ItemForm
 
@@ -57,13 +59,29 @@ class HomeTemplateView(TemplateView):
 
 def home(request):
     if request.user.is_authenticated:
-        items = ItemTrackerForm.objects.filter(user=request.user).all().order_by('-date')
-        context = {'items': items}
+        items = ItemTracker.objects.filter(user=request.user).all().order_by('-modified_on')
+        no_of_items = items.count()
+        print(no_of_items)
+        context = {'items': items, 'no_of_items': no_of_items}
         return render(request, 'home.html', context)
     else:
         context = {}
         return render(request, 'home.html', context)
 
+def all_items(request):
+    if request.user.is_authenticated:
+        items = Item.objects.filter(user=request.user).all().order_by('item')
+        no_of_items = items.count()
+        df = pd.DataFrame(list(Item.objects.all().values()))
+        dataframe = pd.DataFrame(list(Item.objects.filter(user=request.user).all().values('item',)))
+        print(no_of_items)
+        print(df)
+        print(dataframe)
+        context = {'items': items, 'no_of_items': no_of_items}
+        return render(request, 'items_list.html', context)
+    else:
+        context = {}
+        return render(request, 'home.html', context)
 
 @login_required(login_url="login")
 def add_item(request):
@@ -74,16 +92,56 @@ def add_item(request):
             new_item = form.save(commit=False)
             new_item.user = request.user
             new_item.save()
-            return redirect('home')
-        else:
-            form = ItemForm()
-            context = {'form': form}
+            return redirect('items')
+    else:
+        form = ItemForm()
+        context = {'form': form}
     return render(request, 'items.html', context)
+
+
+def delete_item(request, item_id):
+    query = Item.objects.get(id=item_id)
+    if query.user != request.user:
+        return Http404
+    query.delete()
+    return HttpResponse("Deleted!")
+
+@login_required(login_url='user-login')
+#@allowed_users(allowed_roles=['Admin'])
+def item_edit(request, pk):
+    item = Item.objects.get(id=pk)
+    if request.method == 'POST':
+        form = ItemForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            return redirect('items')
+    else:
+        form = ItemForm(instance=item)
+    context = {
+        'form': form,
+    }
+    return render(request, 'items_edit.html', context)
+
+#Tracker Views
+def list_item_tracker(request):
+    if request.user.is_authenticated:
+        tracker = ItemTracker.objects.filter(user=request.user).all().order_by('-modified_on')
+        no_of_items = tracker.count()
+        item = ItemDay.objects.filter(user=request.user).all()
+        item_tracker = item.item_day_set.order_by('-modified_on')
+        print(item_tracker)
+        print(item)
+        #context = {'item': item, 'item_tracker': item_tracker}
+        print(no_of_items)
+        context = {'tracker': tracker, 'no_of_items': no_of_items}
+        return render(request, 'tracker.html', context)
+    else:
+        context = {}
+        return render(request, 'home.html', context)
 
 
 @login_required(login_url="login")
 def item_tracker(request):
-    """Add a new session for a particular chat."""
     if request.method == 'POST':
         form = ItemTrackerForm(data=request.POST)
         if form.is_valid():
@@ -91,19 +149,18 @@ def item_tracker(request):
             new_item.user = request.user
             new_item.save()
             return redirect('home')
-        else:
-            form = ItemTrackerForm()
-            context = {'form': form}
+    else:
+        form = ItemTrackerForm()
+        context = {'form': form}
     return render(request, 'item_tracker.html', context)
 
-
+"""
 @login_required(login_url="login")
 def item_tracker(request, item_id):
     item = ItemDayForm.objects.create(date=timezone.now())
     item_tracker = get_object_or_404(item, id=item_id)
     if item_tracker.user != request.user:
         return Http404
-    """Add a new session for a particular chat."""
     if request.method == 'POST':
         form = ItemTrackerForm(data=request.POST)
         if form.is_valid():
@@ -115,7 +172,7 @@ def item_tracker(request, item_id):
             form = ItemTrackerForm()
             context = {'form': form}
     return render(request, 'item_tracker.html', context)
-
+"""
 @login_required(login_url="login")
 def item_list(request, item_id):
     item = ItemDay.objects.get(id=item_id)
