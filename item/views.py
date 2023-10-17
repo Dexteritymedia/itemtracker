@@ -137,7 +137,10 @@ def item_details(request, pk):
         x = items.values_list('modified_on', flat=True)
         #x = items.values_list('modified_on__day', flat=True)#Use this to track the day, change day to second, minute, hour, week, or month, or year
         y = items.values_list('price', flat=True)
-        fig = px.line(x=x, y=y)
+        fig = px.line(x=x, y=y, title=f"Breakdown of hoe much you spent on {item.item.title()}")
+        fig.update_layout(
+            xaxis_title="Date", yaxis_title="Price"
+        )
         plot_div = plot(fig, show_link=False, output_type="div")
         context = {
             'item': item,
