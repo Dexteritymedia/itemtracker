@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+	<div class="row mt-5">
+	<h1 class="mt-5">{{ item.item|title }}</h1>
+	
+	{% if items %}
+	<div class="col-12">
+		<table class="table table-bordered">
+			<thead>
+				<tr>
+					<th>Item </th>
+					<th>Price </th>
+					<th>Date </th>
+					<th>Debt </th>
+					<th>Price </th>
+				</tr>
+			</thead>
+			<tbody>
+				{% csrf_token %}
+				{% for item in items %}
+				<tr>
+					<td>{{ item.item.item|title }}</td>
+					<td>{{ item.price }}</td>
+					<td>{{ item.modified_on }}</td>
+					<td>{{ item.debt }}</td>
+					<td>{{ item.debt_purchased }}</td>
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+	{% else %}
+	<h5>You haven't tracked this item. You can start tracking this item <a href="">here</a></h5>
+	{% endif %}
+	
+	{% if plot_div %}
+	<div class="col-12">
+		{% autoescape off %}
+			{{ plot_div }}
+		{% endautoescape %}
+	</div>
+	{% endif %}
+	
+	
+	</div>
+</div>
+{% endblock content %}

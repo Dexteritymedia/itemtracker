@@ -56,6 +56,8 @@ class ItemTracker(models.Model):
     debt = models.BooleanField(default=False, verbose_name="Credit/Debit", help_text="Click the box if purchase is on credit")
 	
     def __str__(self):
+        if self.item_day == None:
+            return f"{self.item}"
         return f"""
                 Added {self.item} on {self.created_on}, modified {self.modified_on}, Debt {self.debt}"""
 

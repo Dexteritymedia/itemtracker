@@ -13,6 +13,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 
 import pandas as pd
+import plotly.express as px
+from plotly.offline import plot
 
 from .models import Item, ItemTracker, ItemDay
 #from .utils import *
@@ -122,16 +124,43 @@ def item_edit(request, pk):
     }
     return render(request, 'items_edit.html', context)
 
+@login_required(login_url='user-login')
+def item_details(request, pk):
+    item = get_object_or_404(Item, id=pk)
+    if item.user != request.user:
+        return Http404
+    print(item.item)
+    items = ItemTracker.objects.filter(user=request.user, item__item=item.item).all()
+    print(items)
+    if items:
+        
+        x = items.values_list('modified_on', flat=True)
+        #x = items.values_list('modified_on__day', flat=True)#Use this to track the day, change day to second, minute, hour, week, or month, or year
+        y = items.values_list('price', flat=True)
+        fig = px.line(x=x, y=y)
+        plot_div = plot(fig, show_link=False, output_type="div")
+        context = {
+            'item': item,
+            'items': items,
+            'plot_div': plot_div,
+        }
+    else:
+        context = {
+            'item': item,
+            'items': items,
+        }
+        
+    return render(request, 'items_details.html', context)
+
 #Tracker Views
 def list_item_tracker(request):
     if request.user.is_authenticated:
         tracker = ItemTracker.objects.filter(user=request.user).all().order_by('-modified_on')
         no_of_items = tracker.count()
-        item = ItemDay.objects.filter(user=request.user).all()
-        item_tracker = item.item_day_set.order_by('-modified_on')
-        print(item_tracker)
-        print(item)
-        #context = {'item': item, 'item_tracker': item_tracker}
+        #item = ItemDay.objects.filter(user=request.user).all()
+        #item_tracker = item.item_day_set.order_by('-modified_on')
+        #print(item_tracker)
+        #print(item)
         print(no_of_items)
         context = {'tracker': tracker, 'no_of_items': no_of_items}
         return render(request, 'tracker.html', context)
@@ -141,13 +170,16 @@ def list_item_tracker(request):
 
 
 @login_required(login_url="login")
-def item_tracker(request):
+def add_item_tracker(request):
+    day = ItemDay.objects.get_or_create(date=timezone.now())
+    #print(day)
     if request.method == 'POST':
         form = ItemTrackerForm(data=request.POST)
         if form.is_valid():
-            new_item = form.save(commit=False)
-            new_item.user = request.user
-            new_item.save()
+            new_item_tracker = form.save(commit=False)
+            new_item_tracker.user = request.user
+            new_item_tracker.item_day.date = day
+            new_item_tracker.save()
             return redirect('home')
     else:
         form = ItemTrackerForm()

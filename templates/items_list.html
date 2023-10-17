@@ -26,6 +26,7 @@
 						<td>
 							<a href="{% url 'delete-item' item.id %}">Delete</a>
 							<a href="{% url 'edit-item' item.id %}">Edit</a>
+							<a href="{% url 'item-details' item.id %}">View</a>
 						</td>
 					</tr>
 					{% endfor %}
